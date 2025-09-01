@@ -27,7 +27,7 @@ export class BookStack extends cdk.Stack {
     // define AWS Lambda for get User Books
     const getUserBooks = new NodejsFunction(this, 'getUserBooks', {
         runtime: Runtime.NODEJS_22_X,
-        entry: path.join(__dirname, '../lambdas/get-user-books.ts'),
+        entry: path.join(__dirname, '../lambdas/books/get-user-books.ts'),
         handler: 'handler',
         environment: {
           DB_TABLE_NAME: table.tableName
@@ -39,7 +39,7 @@ export class BookStack extends cdk.Stack {
     // define AWS Lambda for add User Book
     const addUserBook = new NodejsFunction(this, 'AddUserBook', {
       runtime: Runtime.NODEJS_22_X,
-      entry: path.join(__dirname, '../lambdas/add-user-book.ts'),
+      entry: path.join(__dirname, '../lambdas/books/add-user-book.ts'),
       handler: 'handler',
       environment: {
         DB_TABLE_NAME: table.tableName
@@ -49,7 +49,7 @@ export class BookStack extends cdk.Stack {
 
     const updateBook = new NodejsFunction(this, 'UpdateBook', {
       runtime: Runtime.NODEJS_22_X,
-      entry: path.join(__dirname, '../lambdas/update-book.ts'),
+      entry: path.join(__dirname, '../lambdas/books/update-book.ts'),
       handler: 'handler',
       environment: {
         DB_TABLE_NAME: table.tableName,
@@ -65,7 +65,7 @@ export class BookStack extends cdk.Stack {
 
     const deleteBook = new NodejsFunction(this, 'DeleteBook', {
       runtime: Runtime.NODEJS_22_X,
-      entry: path.join(__dirname, '../lambdas/delete-book.ts'),
+      entry: path.join(__dirname, '../lambdas/books/delete-book.ts'),
       handler: 'handler',
       environment: {
         DB_TABLE_NAME: table.tableName,

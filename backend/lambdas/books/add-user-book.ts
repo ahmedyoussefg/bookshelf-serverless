@@ -1,7 +1,7 @@
 import { APIGatewayEvent } from "aws-lambda";
-import dynamo from '../db-client';
+import dynamo from '../../db-client';
 import {v4 as uuidv4} from 'uuid';
-import { handleError } from "../services/error-handler";
+import { handleError } from "../../services/error-handler";
 
 interface CreateBookType {
     PK: string,

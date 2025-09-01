@@ -1,6 +1,6 @@
 import { APIGatewayEvent } from "aws-lambda";
-import dynamo from '../db-client';
-import { handleError } from "../services/error-handler";
+import dynamo from '../../db-client';
+import { handleError } from "../../services/error-handler";
 export const handler = async (event: APIGatewayEvent) => {
     const userId = '1';
     const PK = `USER#${userId}`;
