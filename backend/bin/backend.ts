@@ -2,11 +2,25 @@
 import * as cdk from 'aws-cdk-lib';
 import { BookStack } from '../lib/book-stack';
 import { DatabaseStack } from '../lib/database-stack';
+import { ApiStack } from '../lib/api-stack';
+import { AuthStack } from '../lib/auth-stack';
 
 const app = new cdk.App();
 const dbStack = new DatabaseStack(app, 'DatabaseStack', {});
+const apiStack = new ApiStack(app, 'ApiStack');
+new AuthStack(app, 'AuthStack', {
+  table: dbStack.table,
+  api: apiStack.api,
+});
+
 new BookStack(app, 'BookStack', {
-  table: dbStack.table
+  table: dbStack.table,
+  api: apiStack.api,
+  createBookModel: apiStack.createBookModel,
+  updateBookModel: apiStack.updateBookModel,
+  createBookRequestValidator: apiStack.createBookRequestValidator,
+  updateBookRequestValidator: apiStack.updateBookRequestValidator,
+  deleteBookRequestValidator: apiStack.deleteBookRequestValidator,
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

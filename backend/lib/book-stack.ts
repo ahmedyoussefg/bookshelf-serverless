@@ -1,25 +1,27 @@
 import * as cdk from 'aws-cdk-lib';
-import { JsonSchemaType, LambdaIntegration, Model, RequestValidator, RestApi } from 'aws-cdk-lib/aws-apigateway';
-import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { LambdaIntegration, Model, RequestValidator, Resource, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import path from 'path';
-import genreEnum from '../types/genre-enum';
-import readStatusEnum from '../types/read-status-enum';
-import buildCreateBookModel from '../models/create-book-model';
-import buildUpdateBookModel from '../models/update-book-model';
-import buildCreateBookRequestValidator from '../validators/create-book-validator';
-import buildUpdateBookRequestValidator from '../validators/update-book-validator';
 
 interface Props extends cdk.StackProps{
   table: Table,
+  api: RestApi,
+  createBookModel: Model,
+  updateBookModel: Model,
+  createBookRequestValidator: RequestValidator,
+  updateBookRequestValidator: RequestValidator,
+  deleteBookRequestValidator: RequestValidator,
 }
 export class BookStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
     const table = props.table;
+    const api = props.api;
+
     const bookIdIndexName = 'PK-bookId-index';
 
     // define AWS Lambda for get User Books
@@ -61,33 +63,47 @@ export class BookStack extends cdk.Stack {
     table.grantWriteData(updateBook);
 
 
-    // define API gateway
-    const api = new RestApi(this, 'bookshelf-api');
+    const deleteBook = new NodejsFunction(this, 'DeleteBook', {
+      runtime: Runtime.NODEJS_22_X,
+      entry: path.join(__dirname, '../lambdas/delete-book.ts'),
+      handler: 'handler',
+      environment: {
+        DB_TABLE_NAME: table.tableName,
+        BOOKID_INDEX_NAME: bookIdIndexName,
+      }
+    });
+    deleteBook.addToRolePolicy(new PolicyStatement({
+      actions: ['dynamodb:Query'],
+      resources: [`${table.tableArn}/index/${bookIdIndexName}`]
+    }))
+    table.grantWriteData(deleteBook);
 
-    // define API gateway models
-    const createBookModel: Model = buildCreateBookModel(this, api);
-    const updateBookModel: Model = buildUpdateBookModel(this, api); 
+    // define book resources
+    const usersResource = api.root.addResource('user'); // api /user    
+    const booksResource = usersResource.addResource('books'); // api /user/books
 
-    // define resources
-    const user = api.root.addResource('user'); // api /user
-    const books = user.addResource('books'); // api /user/books
-    books.addMethod('GET', new LambdaIntegration(getUserBooks));
-    books.addMethod('POST', new LambdaIntegration(addUserBook), {
+    // add methods to books resource
+    booksResource.addMethod('GET', new LambdaIntegration(getUserBooks));
+    booksResource.addMethod('POST', new LambdaIntegration(addUserBook), {
       requestModels: {
-        "application/json": createBookModel
+        "application/json": props.createBookModel
       },
-      requestValidator: buildCreateBookRequestValidator(this, api),
+      requestValidator: props.createBookRequestValidator,
     });
     
-    const bookWithId = books.addResource('{id}');
+    const bookWithId = booksResource.addResource('{id}'); // api 
     bookWithId.addMethod('PATCH', new LambdaIntegration(updateBook), {
       requestModels: {
-        "application/json": updateBookModel
+        "application/json": props.updateBookModel
       },
       requestParameters: {
         'method.request.path.id': true
       },
-      requestValidator: buildUpdateBookRequestValidator(this, api),
+      requestValidator: props.updateBookRequestValidator,
+    });
+
+    bookWithId.addMethod('DELETE', new LambdaIntegration(deleteBook), {
+      requestValidator: props.deleteBookRequestValidator,
     });
   }
 }
