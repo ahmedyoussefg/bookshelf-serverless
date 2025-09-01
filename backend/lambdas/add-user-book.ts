@@ -20,15 +20,8 @@ export const handler = async (event: APIGatewayEvent) => {
     const PK = `USER#${userId}`;
     const bookId = uuidv4();
     const SK = `BOOK#${bookId}`;
-    // TODO: Remove this when we add validator
-    if (!event.body) {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ message: "Request body is required" }),
-        };
-    }
     try {
-        const data = JSON.parse(event.body);
+        const data = JSON.parse(event.body!);
         // Set starred to the creationDate if true
         const createdAt = new Date().toISOString();
         const starredValue = data.starred ?  createdAt: undefined;

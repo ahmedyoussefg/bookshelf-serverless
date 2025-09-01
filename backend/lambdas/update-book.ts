@@ -1,38 +1,19 @@
 import { APIGatewayEvent } from "aws-lambda";
 import dynamo from '../db-client';
+import { getExistingBook } from "../services/book-services";
 
 export const handler = async (event: APIGatewayEvent) => {
     const userId = '1';
-    const bookId = event.pathParameters!.id;
-    const PK = `USER#${userId}`;
-    const SK = `BOOK#${bookId}`;
-    // TODO: Remove this when we add validator
-    if (!event.body) {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ message: "Request body is required" }),
-        };
-    }
+    const bookId: string = event.pathParameters?.id!;
     try {
-        // TODO: extract this to another method
-        const existingBookQuery = await dynamo.query({
-            TableName: process.env.DB_TABLE_NAME,
-            IndexName: process.env.BOOKID_INDEX_NAME,
-            KeyConditionExpression: "PK=:pk AND bookId=:bookId",
-            ExpressionAttributeValues:{
-                ":pk":PK,
-                ":bookId":bookId,
-            }
-        });
-
-        if (!existingBookQuery.Items || existingBookQuery.Items.length === 0) {
+        const existingBook = await getExistingBook(userId, bookId);
+        if (!existingBook) {
             return {
                 statusCode: 404,
                 body: JSON.stringify({ message: "Book not found" }),
             };
         }
-        const existingBook = existingBookQuery.Items[0];
-        const data = JSON.parse(event.body);
+        const data = JSON.parse(event.body!);
 
         const possibleFields = ["title", "author", "genre", "readStatus", "owned", "starred"];
         const attributeNamesMapping: Record<string, string> = {};
@@ -74,7 +55,7 @@ export const handler = async (event: APIGatewayEvent) => {
         const result = await dynamo.update({
             TableName: process.env.DB_TABLE_NAME,
             Key: {
-                PK,
+                PK: `USER#${userId}`,
                 SK: existingBook.SK,
             },
             UpdateExpression: updateExp,
