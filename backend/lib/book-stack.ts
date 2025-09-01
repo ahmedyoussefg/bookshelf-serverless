@@ -16,7 +16,7 @@ import buildUpdateBookRequestValidator from '../validators/update-book-validator
 interface Props extends cdk.StackProps{
   table: Table,
 }
-export class BackendStack extends cdk.Stack {
+export class BookStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
     const table = props.table;
