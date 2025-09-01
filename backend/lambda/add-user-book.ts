@@ -1,4 +1,4 @@
-import { APIGatewayEvent, APIGatewayProxyCallback, Context } from "aws-lambda";
+import { APIGatewayEvent } from "aws-lambda";
 import dynamo from '../db-client';
 import {v4 as uuidv4} from 'uuid';
 

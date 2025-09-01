@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
@@ -12,7 +13,8 @@ interface Props extends cdk.StackProps{
 export class BackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
-    const table = props.table;    
+    const table = props.table;
+    const bookIdIndexName = 'PK-bookId-index';
 
     // define AWS Lambda for get User Books
     const getUserBooks = new NodejsFunction(this, 'getUserBooks', {
@@ -37,6 +39,21 @@ export class BackendStack extends cdk.Stack {
     });
     table.grantWriteData(addUserBook);
 
+    const updateBook = new NodejsFunction(this, 'UpdateBook', {
+      runtime: Runtime.NODEJS_22_X,
+      entry: path.join(__dirname, '../lambda/update-book.ts'),
+      handler: 'handler',
+      environment: {
+        DB_TABLE_NAME: table.tableName,
+        BOOKID_INDEX_NAME: bookIdIndexName,
+      }
+    });
+    updateBook.addToRolePolicy(new PolicyStatement({
+      actions: ['dynamodb:Query'],
+      resources: [`${table.tableArn}/index/${bookIdIndexName}`]
+    }))
+    table.grantWriteData(updateBook);
+
     // define API gateway
 
     const api = new RestApi(this, 'bookshelf-api');
@@ -45,5 +62,8 @@ export class BackendStack extends cdk.Stack {
     const books = user.addResource('books'); // api /user/books
     books.addMethod('GET', new LambdaIntegration(getUserBooks));
     books.addMethod('POST', new LambdaIntegration(addUserBook));
+    
+    const bookWithId = books.addResource('{id}');
+    bookWithId.addMethod('PATCH', new LambdaIntegration(updateBook));
   }
 }
