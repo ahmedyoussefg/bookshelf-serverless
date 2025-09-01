@@ -1,4 +1,4 @@
-import { APIGatewayEvent, APIGatewayProxyCallback, Context } from "aws-lambda";
+import { APIGatewayEvent } from "aws-lambda";
 import dynamo from '../db-client';
 export const handler = async (event: APIGatewayEvent) => {
     const userId = '1';
