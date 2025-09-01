@@ -2,7 +2,7 @@ import { JsonSchemaType, JsonSchemaVersion, Model, RestApi } from "aws-cdk-lib/a
 import { Construct } from "constructs";
 import { bookProperties } from "./book-helper";
 
-export function buildUpdateBookModel(scope:Construct, api: RestApi) {
+export function buildUpdateBookModel(scope:Construct, api: RestApi): Model {
     return new Model(scope, 'UpdateBookModel', {
         restApi: api,
         contentType: "application/json",
