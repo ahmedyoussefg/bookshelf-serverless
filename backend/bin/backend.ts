@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { BackendStack } from '../lib/backend-stack';
+import { BookStack } from '../lib/book-stack';
 import { DatabaseStack } from '../lib/database-stack';
 
 const app = new cdk.App();
 const dbStack = new DatabaseStack(app, 'DatabaseStack', {});
-new BackendStack(app, 'BackendStack', {
+new BookStack(app, 'BookStack', {
   table: dbStack.table
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
