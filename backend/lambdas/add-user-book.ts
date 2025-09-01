@@ -1,6 +1,7 @@
 import { APIGatewayEvent } from "aws-lambda";
 import dynamo from '../db-client';
 import {v4 as uuidv4} from 'uuid';
+import { handleError } from "../services/error-handler";
 
 interface CreateBookType {
     PK: string,
@@ -57,19 +58,6 @@ export const handler = async (event: APIGatewayEvent) => {
             }),
         }
     } catch (err) {
-        let statusCode = 500;
-        let message = "Internal Server Error";
-        if (err && typeof err === "object") {
-            if (err instanceof Error) {
-                message = err.message || message;
-            }
-            if ("statusCode" in err && typeof (err as any).statusCode === "number") {
-                statusCode = (err as any).statusCode;
-            }
-        }
-        return {
-            statusCode,
-            body: JSON.stringify({ message }),
-        };
+        return handleError(err);
     }
 }
