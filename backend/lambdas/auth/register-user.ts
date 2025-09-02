@@ -4,12 +4,14 @@ import {v4 as uuidv4} from 'uuid';
 import { handleError } from "../../services/error-handler";
 import { getExistingUser } from "../../services/user-services";
 import bcrypt from 'bcryptjs';
+import { generateToken } from "../../services/jwt-services";
 
 interface CreateUserType {
     PK: string,
     SK: string,
     username: string,
     hashedPassword: string,
+    userId: string,
 };
 
 export const handler = async (event: APIGatewayEvent) => {
@@ -34,17 +36,18 @@ export const handler = async (event: APIGatewayEvent) => {
             SK:PK,
             username,
             hashedPassword,
+            userId,
         };        
         await dynamo.put({
             TableName: process.env.DB_TABLE_NAME,
             Item: insertedUser,
         });
-        
+
+        const token = await generateToken(userId);
         return {
             statusCode: 201,
-            // TODO: return JWT token and remove message
             body: JSON.stringify({
-                message: 'User created successfully',
+                token: token,
                 username: insertedUser.username,
             }),
         }
