@@ -2,6 +2,7 @@ import { APIGatewayEvent } from "aws-lambda";
 import { handleError } from "../../services/error-handler";
 import { getExistingUser } from "../../services/user-services";
 import bcrypt from 'bcryptjs';
+import { generateToken } from "../../services/jwt-services";
 
 export const handler = async (event: APIGatewayEvent) => {
     try {
@@ -25,12 +26,12 @@ export const handler = async (event: APIGatewayEvent) => {
                 }),
             };
         }
-        
+        const token = await generateToken(existingUser.userId); 
+    
         return {
             statusCode: 200,
-            // TODO: return JWT token and remove message
             body: JSON.stringify({
-                message: 'User logged in successfully',
+                token,
                 username: username,
             }),
         }
