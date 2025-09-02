@@ -11,8 +11,8 @@ const apiStack = new ApiStack(app, 'ApiStack');
 new AuthStack(app, 'AuthStack', {
   table: dbStack.table,
   api: apiStack.api,
-  registerUserModel: apiStack.registerUserModel,
-  registerUserRequestValidator: apiStack.registerUserRequestValidator,
+  authModel: apiStack.authModel,
+  authRequestValidator: apiStack.authRequestValidator,
 });
 
 new BookStack(app, 'BookStack', {

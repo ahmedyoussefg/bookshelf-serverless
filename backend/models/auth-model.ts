@@ -1,12 +1,12 @@
 import { JsonSchemaType, JsonSchemaVersion, Model, RestApi } from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
 
-export function buildRegisterUserModel(scope:Construct, api: RestApi): Model {
-    return new Model(scope, 'RegisterUserModel', {
+export function buildAuthModel(scope:Construct, api: RestApi): Model {
+    return new Model(scope, 'AuthModel', {
         restApi: api,
         contentType: "application/json",
         schema: {
-            title: "RegisterUserModel",
+            title: "AuthModel",
             schema: JsonSchemaVersion.DRAFT4,
             type: JsonSchemaType.OBJECT,
             properties: {
@@ -26,4 +26,4 @@ export function buildRegisterUserModel(scope:Construct, api: RestApi): Model {
         },
     });
 }
-export default buildRegisterUserModel;
+export default buildAuthModel;
