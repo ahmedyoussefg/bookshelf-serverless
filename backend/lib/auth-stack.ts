@@ -10,8 +10,8 @@ import path from 'path';
 interface Props extends cdk.StackProps{
   table: Table,
   api: RestApi,
-  registerUserModel: Model,
-  registerUserRequestValidator: RequestValidator,
+  authModel: Model,
+  authRequestValidator: RequestValidator,
 }
 export class AuthStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Props) {
@@ -39,9 +39,33 @@ export class AuthStack extends cdk.Stack {
     const authRegisterResource = authResource.addResource('register');
     authRegisterResource.addMethod('POST', new LambdaIntegration(registerUser), {
         requestModels: {
-            "application/json": props.registerUserModel,
+            "application/json": props.authModel,
         },
-        requestValidator: props.registerUserRequestValidator,
-    })
+        requestValidator: props.authRequestValidator,
+    });
+
+   
+    // define AWS Lambda for user login
+    const loginUser = new NodejsFunction(this, 'LoginUser', {
+        runtime: Runtime.NODEJS_22_X,
+        entry: path.join(__dirname, '../lambdas/auth/login-user.ts'),
+        handler: 'handler',
+        environment: {
+            DB_TABLE_NAME: table.tableName,
+            USERNAME_INDEX_NAME: usernameIndexName
+        }
+    });
+    loginUser.addToRolePolicy(new PolicyStatement({
+        actions: ['dynamodb:Query'],
+        resources: [`${table.tableArn}/index/${usernameIndexName}`]
+    }));
+    
+    const authLoginResource = authResource.addResource('login');
+    authLoginResource.addMethod('POST', new LambdaIntegration(loginUser), {
+        requestModels: {
+            "application/json": props.authModel,
+        },
+        requestValidator: props.authRequestValidator,
+    });
   }
 }
