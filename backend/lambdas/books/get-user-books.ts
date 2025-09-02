@@ -12,6 +12,8 @@ export const handler = async (event: APIGatewayEvent) => {
                 ":PK": PK,
                 ":skPrefix": "BOOK#",
             },
+            ScanIndexForward: false,
+            
         });
         const books = results.Items?.map(item => ({
             id: item.bookId,                  // rename bookId to id
