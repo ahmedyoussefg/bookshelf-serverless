@@ -3,6 +3,7 @@ import { handleError } from "../../services/error-handler";
 import { getExistingUser } from "../../services/user-services";
 import bcrypt from 'bcryptjs';
 import { generateToken } from "../../services/jwt-services";
+import { CORS_HEADERS } from "../../constants/cors-constants";
 
 export const handler = async (event: APIGatewayEvent) => {
     try {
@@ -11,6 +12,7 @@ export const handler = async (event: APIGatewayEvent) => {
         if (!existingUser) {
             return {
                 statusCode: 401,
+                headers: CORS_HEADERS,
                 body: JSON.stringify({
                     message: "Invalid User Credentials",
                 }),
@@ -21,6 +23,7 @@ export const handler = async (event: APIGatewayEvent) => {
         if (!passwordMatch) {
             return {
                 statusCode: 401,
+                headers: CORS_HEADERS,
                 body: JSON.stringify({
                     message: "Invalid User Credentials",
                 }),
@@ -30,6 +33,7 @@ export const handler = async (event: APIGatewayEvent) => {
     
         return {
             statusCode: 200,
+            headers: CORS_HEADERS,
             body: JSON.stringify({
                 token,
                 username: username,

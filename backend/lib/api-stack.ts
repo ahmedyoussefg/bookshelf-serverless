@@ -1,5 +1,5 @@
 import * as cdk from "aws-cdk-lib";
-import { Model, RequestValidator, Resource, RestApi, TokenAuthorizer } from "aws-cdk-lib/aws-apigateway";
+import { Cors, GatewayResponse, Model, RequestValidator, Resource, ResponseType, RestApi, TokenAuthorizer } from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
 import buildCreateBookModel from "../models/create-book-model";
 import buildUpdateBookModel from "../models/update-book-model";
@@ -12,6 +12,7 @@ import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { StringParameter, ParameterTier } from "aws-cdk-lib/aws-ssm";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import path from "path";
+import { CORS_HEADERS } from "../constants/cors-constants";
 
 interface Props extends cdk.StackProps{
   jwtSecretParam: StringParameter,
@@ -30,8 +31,12 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
     // define API gateway
-    this.api = new RestApi(this, 'bookshelf-api');
-    
+    this.api = new RestApi(this, 'bookshelf-api', {
+      defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS,
+      },
+    });
+
     // define API gateway models
     this.createBookModel = buildCreateBookModel(this, this.api);
     this.updateBookModel = buildUpdateBookModel(this, this.api); 

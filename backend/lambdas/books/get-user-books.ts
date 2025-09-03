@@ -1,6 +1,7 @@
 import { APIGatewayEvent } from "aws-lambda";
 import dynamo from '../../db-client';
 import { handleError } from "../../services/error-handler";
+import { CORS_HEADERS } from "../../constants/cors-constants";
 export const handler = async (event: APIGatewayEvent) => {
     // Get user ID from authorizer
     const userId = event.requestContext.authorizer?.principalId;
@@ -44,6 +45,7 @@ export const handler = async (event: APIGatewayEvent) => {
         return {
             statusCode: 200,
             body: JSON.stringify(books),
+            headers: CORS_HEADERS,
         }
     } catch (err) {
         return handleError(err);

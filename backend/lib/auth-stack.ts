@@ -52,20 +52,20 @@ export class AuthStack extends cdk.Stack {
       requestValidator: props.authRequestValidator,
     });
     
-        
+    
     // define AWS Lambda for user login
     const loginUser = new NodejsFunction(this, 'LoginUser', {
-        runtime: Runtime.NODEJS_22_X,
-        entry: path.join(__dirname, '../lambdas/auth/login-user.ts'),
-        handler: 'handler',
-        environment: {
-            DB_TABLE_NAME: table.tableName,
-            USERNAME_INDEX_NAME: usernameIndexName,
-            JWT_SECRET_KEY_PARAM_NAME: jwtSecretParam.parameterName,
-        },
-        timeout: cdk.Duration.seconds(8),
+      runtime: Runtime.NODEJS_22_X,
+      entry: path.join(__dirname, '../lambdas/auth/login-user.ts'),
+      handler: 'handler',
+      environment: {
+        DB_TABLE_NAME: table.tableName,
+        USERNAME_INDEX_NAME: usernameIndexName,
+        JWT_SECRET_KEY_PARAM_NAME: jwtSecretParam.parameterName,
+      },
+      timeout: cdk.Duration.seconds(8),
     });
-  
+    
     jwtSecretParam.grantRead(loginUser);
     loginUser.addToRolePolicy(new PolicyStatement({
         actions: ['dynamodb:Query'],
@@ -74,10 +74,10 @@ export class AuthStack extends cdk.Stack {
     
     const authLoginResource = authResource.addResource('login');
     authLoginResource.addMethod('POST', new LambdaIntegration(loginUser), {
-        requestModels: {
-            "application/json": props.authModel,
-        },
-        requestValidator: props.authRequestValidator,
+      requestModels: {
+        "application/json": props.authModel,
+      },
+      requestValidator: props.authRequestValidator,
     });
   }
 }

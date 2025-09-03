@@ -2,6 +2,7 @@ import { APIGatewayEvent } from "aws-lambda";
 import dynamo from '../../db-client';
 import { getExistingBook } from "../../services/book-services";
 import { handleError } from "../../services/error-handler";
+import { CORS_HEADERS } from "../../constants/cors-constants";
 
 export const handler = async (event: APIGatewayEvent) => {
     // Get user ID from authorizer
@@ -13,6 +14,7 @@ export const handler = async (event: APIGatewayEvent) => {
             return {
                 statusCode: 404,
                 body: JSON.stringify({ message: "Book not found" }),
+                headers: CORS_HEADERS,
             };
         }
         await dynamo.delete({
@@ -24,6 +26,7 @@ export const handler = async (event: APIGatewayEvent) => {
         })
         return {
             statusCode: 204,
+            headers: CORS_HEADERS,
         }
     } catch (err) {
         return handleError(err);
