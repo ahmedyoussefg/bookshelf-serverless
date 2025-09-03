@@ -2,7 +2,8 @@ import { APIGatewayEvent } from "aws-lambda";
 import dynamo from '../../db-client';
 import { handleError } from "../../services/error-handler";
 export const handler = async (event: APIGatewayEvent) => {
-    const userId = '1';
+    // Get user ID from authorizer
+    const userId = event.requestContext.authorizer?.principalId;
     const PK = `USER#${userId}`;
     try {
         const results = await dynamo.query({
@@ -13,8 +14,8 @@ export const handler = async (event: APIGatewayEvent) => {
                 ":skPrefix": "BOOK#",
             },
             ScanIndexForward: false,
-            
         });
+
         const books = results.Items?.map(item => ({
             id: item.bookId,                  // rename bookId to id
             title: item.title,

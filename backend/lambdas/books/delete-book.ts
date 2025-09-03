@@ -4,7 +4,8 @@ import { getExistingBook } from "../../services/book-services";
 import { handleError } from "../../services/error-handler";
 
 export const handler = async (event: APIGatewayEvent) => {
-    const userId = '1';
+    // Get user ID from authorizer
+    const userId = event.requestContext.authorizer?.principalId;
     const bookId: string = event.pathParameters?.id!;
     try {
         const existingBook = await getExistingBook(userId, bookId);

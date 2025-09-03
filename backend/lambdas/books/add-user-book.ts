@@ -17,7 +17,8 @@ interface CreateBookType {
     starred?: string,
 };
 export const handler = async (event: APIGatewayEvent) => {
-    const userId = '1';
+    // Get user ID from authorizer
+    const userId = event.requestContext.authorizer?.principalId;
     const PK = `USER#${userId}`;
     const bookId = uuidv4();
     const SK = `BOOK#${bookId}`;
