@@ -95,12 +95,12 @@ export class BookStack extends cdk.Stack {
     // define book resources
     const usersResource = api.root.addResource('user'); // api /user    
     const booksResource = usersResource.addResource('books'); // api /user/books
-
+    
     const authGuardMethodProps: MethodOptions = {
       authorizer: authorizer,
       authorizationType: AuthorizationType.CUSTOM,
     };
-
+    
     // add methods to books resource
     booksResource.addMethod('GET', new LambdaIntegration(getUserBooks), authGuardMethodProps);
     booksResource.addMethod('POST', new LambdaIntegration(addUserBook), {
@@ -122,7 +122,7 @@ export class BookStack extends cdk.Stack {
       requestValidator: props.updateBookRequestValidator,
       ...authGuardMethodProps,
     });
-
+    
     bookWithId.addMethod('DELETE', new LambdaIntegration(deleteBook), {
       requestValidator: props.deleteBookRequestValidator,
       ...authGuardMethodProps,

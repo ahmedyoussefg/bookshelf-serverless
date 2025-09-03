@@ -1,3 +1,5 @@
+import { CORS_HEADERS } from "../constants/cors-constants";
+
 export const handleError = (err: any) => {
     let statusCode = 500;
     let message = "Internal Server Error";
@@ -11,6 +13,7 @@ export const handleError = (err: any) => {
     }
     return {
         statusCode,
+        headers: CORS_HEADERS,
         body: JSON.stringify({ message }),
     };
 };

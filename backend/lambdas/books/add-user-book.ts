@@ -2,6 +2,7 @@ import { APIGatewayEvent } from "aws-lambda";
 import dynamo from '../../db-client';
 import {v4 as uuidv4} from 'uuid';
 import { handleError } from "../../services/error-handler";
+import { CORS_HEADERS } from "../../constants/cors-constants";
 
 interface CreateBookType {
     PK: string,
@@ -48,6 +49,7 @@ export const handler = async (event: APIGatewayEvent) => {
         })
         return {
             statusCode: 201,
+            headers: CORS_HEADERS,
             body: JSON.stringify({
                 id: insertedBook.bookId,
                 title: insertedBook.title,

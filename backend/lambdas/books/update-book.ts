@@ -2,6 +2,7 @@ import { APIGatewayEvent } from "aws-lambda";
 import dynamo from '../../db-client';
 import { getExistingBook } from "../../services/book-services";
 import { handleError } from "../../services/error-handler";
+import { CORS_HEADERS } from "../../constants/cors-constants";
 
 export const handler = async (event: APIGatewayEvent) => {
     // Get user ID from authorizer
@@ -12,6 +13,7 @@ export const handler = async (event: APIGatewayEvent) => {
         if (!existingBook) {
             return {
                 statusCode: 404,
+                headers: CORS_HEADERS,
                 body: JSON.stringify({ message: "Book not found" }),
             };
         }
@@ -50,6 +52,7 @@ export const handler = async (event: APIGatewayEvent) => {
         if (!updateExp) {
             return {
                 statusCode: 400,
+                headers: CORS_HEADERS,
                 body: JSON.stringify({ message: "No valid fields to update book" }),
             }
         }
@@ -69,11 +72,13 @@ export const handler = async (event: APIGatewayEvent) => {
         if (!updatedBook) {
             return {
                 statusCode: 500,
+                headers: CORS_HEADERS,
                 body: JSON.stringify({ message: "Failed to update book" }),
             };
         }
         return {
             statusCode: 200,
+            headers: CORS_HEADERS,
             body: JSON.stringify({
                 id: updatedBook.bookId,
                 title: updatedBook.title,

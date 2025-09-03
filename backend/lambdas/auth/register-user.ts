@@ -5,6 +5,7 @@ import { handleError } from "../../services/error-handler";
 import { getExistingUser } from "../../services/user-services";
 import bcrypt from 'bcryptjs';
 import { generateToken } from "../../services/jwt-services";
+import { CORS_HEADERS } from "../../constants/cors-constants";
 
 interface CreateUserType {
     PK: string,
@@ -24,6 +25,7 @@ export const handler = async (event: APIGatewayEvent) => {
         if (existingUser) {
             return {
                 statusCode: 409,
+                headers: CORS_HEADERS,
                 body: JSON.stringify({
                     message: "User already exists.",
                 }),
@@ -46,6 +48,7 @@ export const handler = async (event: APIGatewayEvent) => {
         const token = await generateToken(userId);
         return {
             statusCode: 201,
+            headers: CORS_HEADERS,
             body: JSON.stringify({
                 token: token,
                 username: insertedUser.username,
