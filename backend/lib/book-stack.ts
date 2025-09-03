@@ -27,7 +27,8 @@ export class BookStack extends cdk.Stack {
     const authorizer = props.authorizer;
 
     const bookIdIndexName = 'PK-bookId-index';
-
+    const starredBooksIndexName='PK-starred-index';
+  
     // define AWS Lambda for get User Books
     const getUserBooks = new NodejsFunction(this, 'getUserBooks', {
         runtime: Runtime.NODEJS_22_X,
@@ -36,10 +37,15 @@ export class BookStack extends cdk.Stack {
         environment: {
           DB_TABLE_NAME: table.tableName,
           JWT_SECRET_KEY_PARAM_NAME: jwtSecretParamName,
+          STARRED_BOOKS_INDEX_NAME: starredBooksIndexName,
         },
       }
     );
     table.grantReadData(getUserBooks);
+    getUserBooks.addToRolePolicy(new PolicyStatement({
+      actions: ['dynamodb:Query'],
+      resources: [`${table.tableArn}/index/${starredBooksIndexName}`]
+    }));
 
     // define AWS Lambda for add User Book
     const addUserBook = new NodejsFunction(this, 'AddUserBook', {
@@ -66,7 +72,7 @@ export class BookStack extends cdk.Stack {
     updateBook.addToRolePolicy(new PolicyStatement({
       actions: ['dynamodb:Query'],
       resources: [`${table.tableArn}/index/${bookIdIndexName}`]
-    }))
+    }));
     table.grantWriteData(updateBook);
 
 
