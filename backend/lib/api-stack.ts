@@ -33,7 +33,7 @@ export class ApiStack extends cdk.Stack {
     // define API gateway
     this.api = new RestApi(this, 'bookshelf-api', {
       defaultCorsPreflightOptions: {
-        allowOrigins: Cors.ALL_ORIGINS,
+        allowOrigins: ["https://bookshelf-serverless.vercel.app"],
       },
     });
 
