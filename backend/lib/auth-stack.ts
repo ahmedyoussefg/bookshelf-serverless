@@ -4,7 +4,7 @@ import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { ParameterTier, ParameterType, StringParameter } from 'aws-cdk-lib/aws-ssm';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import path from 'path';
 
@@ -13,21 +13,16 @@ interface Props extends cdk.StackProps{
   api: RestApi,
   authModel: Model,
   authRequestValidator: RequestValidator,
+  jwtSecretParam: StringParameter,
 }
 export class AuthStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
     const table = props.table;
     const api = props.api;
+    const jwtSecretParam = props.jwtSecretParam;
     const usernameIndexName = 'username-index';
-    // define parameter store for jwt secret key
-    const jwtSecretParam = new StringParameter(this, "JwtSecretKey", {
-      parameterName: "jwt-secret-key",
-      stringValue: "secret-key-placeholder", // will change this manually in AWS Console
-      tier: ParameterTier.STANDARD,
-      description: "JWT Secret Key",
-    });
-    
+
     // define AWS Lambda for user register
     const registerUser = new NodejsFunction(this, 'RegisterUser', {
       runtime: Runtime.NODEJS_22_X,

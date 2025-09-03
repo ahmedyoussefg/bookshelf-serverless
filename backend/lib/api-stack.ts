@@ -1,5 +1,5 @@
 import * as cdk from "aws-cdk-lib";
-import { Model, RequestValidator, Resource, RestApi } from "aws-cdk-lib/aws-apigateway";
+import { Model, RequestValidator, Resource, RestApi, TokenAuthorizer } from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
 import buildCreateBookModel from "../models/create-book-model";
 import buildUpdateBookModel from "../models/update-book-model";
@@ -8,7 +8,14 @@ import buildUpdateBookRequestValidator from "../validators/update-book-validator
 import buildDeleteBookRequestValidator from "../validators/delete-book-validator";
 import buildAuthModel from "../models/auth-model";
 import buildAuthRequestValidator from "../validators/auth-validator";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { StringParameter, ParameterTier } from "aws-cdk-lib/aws-ssm";
+import { Runtime } from "aws-cdk-lib/aws-lambda";
+import path from "path";
 
+interface Props extends cdk.StackProps{
+  jwtSecretParam: StringParameter,
+}
 export class ApiStack extends cdk.Stack {
   public readonly api: RestApi;
   public readonly createBookModel: Model;
@@ -18,8 +25,9 @@ export class ApiStack extends cdk.Stack {
   public readonly updateBookRequestValidator: RequestValidator;
   public readonly deleteBookRequestValidator: RequestValidator;
   public readonly authRequestValidator: RequestValidator;
+  public readonly authorizer: TokenAuthorizer;
 
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
     // define API gateway
     this.api = new RestApi(this, 'bookshelf-api');
@@ -34,5 +42,28 @@ export class ApiStack extends cdk.Stack {
     this.updateBookRequestValidator = buildUpdateBookRequestValidator(this, this.api);
     this.deleteBookRequestValidator = buildDeleteBookRequestValidator(this, this.api);
     this.authRequestValidator = buildAuthRequestValidator(this, this.api);
+
+
+    // define Authorizer
+        
+    // define AWS Lambda for Authorizer
+    const authorizerLambda = new NodejsFunction(this, 'AuthorizerLambda', {
+        runtime: Runtime.NODEJS_22_X,
+        entry: path.join(__dirname, '../lambdas/auth/authorizer.ts'),
+        handler: 'handler',
+        environment: {
+            JWT_SECRET_KEY_PARAM_NAME: props.jwtSecretParam.parameterName,
+        },
+        timeout: cdk.Duration.seconds(4),
+    });  
+    props.jwtSecretParam.grantRead(authorizerLambda);
+
+    const authorizer = new TokenAuthorizer(this, 'Authorizer', {
+      handler: authorizerLambda,
+      identitySource: 'method.request.header.Authorization',
+      resultsCacheTtl: cdk.Duration.seconds(0), // disable caching
+    });
+
+    this.authorizer=authorizer;
   } 
 }
