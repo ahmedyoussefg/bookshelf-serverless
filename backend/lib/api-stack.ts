@@ -37,6 +37,19 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
+    new GatewayResponse(this, "UnauthorizedResponse", {
+      restApi: this.api,
+      type: ResponseType.UNAUTHORIZED,
+      responseHeaders: {
+        "Access-Control-Allow-Origin": "'https://bookshelf-serverless.vercel.app'",
+        "Access-Control-Allow-Headers": "'*'",
+        "Access-Control-Allow-Methods": "'*'",
+      },
+      templates: {
+        "application/json": JSON.stringify({ message: "Unauthorized: missing or invalid token" }),
+      },
+    });
+
     // define API gateway models
     this.createBookModel = buildCreateBookModel(this, this.api);
     this.updateBookModel = buildUpdateBookModel(this, this.api); 
