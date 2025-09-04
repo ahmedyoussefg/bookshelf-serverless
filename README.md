@@ -31,6 +31,12 @@ This version is built with **AWS CDK**, integrating multiple AWS services.
     - Used **SSM Parameter Store** to keep the `JWT_SECRET_KEY`.  
     - I could have used AWS Secrets Manager, but for a learning project, Parameter Store was cheaper.  
 
+- AWS API Gateway:
+    - Front door to all backend APIs, routing requests to Lambda functions.
+    - Configured **CORS** for the Vercel frontend.  
+    - Integrated with a **Lambda Authorizer** to validate JWT tokens.  
+    - Added **GatewayResponse** for `401` so unauthorized error responses also include CORS headers.
+
 ## Deployment Steps
 
 ```bash
